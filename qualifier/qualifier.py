@@ -1,7 +1,6 @@
 import typing
 from dataclasses import dataclass
 
-from numpy import full
 
 
 @dataclass(frozen=True)
