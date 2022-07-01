@@ -1,6 +1,8 @@
 import typing
 from dataclasses import dataclass
 
+from numpy import full
+
 
 @dataclass(frozen=True)
 class Request:
@@ -31,4 +33,18 @@ class RestaurantManager:
             Request object containing information about the sent
             request to your application.
         """
-        ...
+        
+        if request.scope["type"] == "staff.onduty":
+            self.staff[request.scope["id"]] = request
+        elif request.scope["type"] == "staff.offduty":
+            del self.staff[request.scope["id"]]
+        elif request.scope["type"] == "order":
+            full_order = await request.receive()
+
+            for staff_id in self.staff:
+                staff = self.staff[staff_id]
+                if request.scope["speciality"] in staff.scope["speciality"]:
+                    await staff.send(full_order)
+                    result = await staff.receive()
+                    await request.send(result)
+                    break
